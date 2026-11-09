@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Autenticación con Facebook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 450px;
+            margin: 50px auto;
+            text-align: center;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: none; /* Oculto hasta que el usuario inicie sesión */
+            margin-top: 20px;
+        }
+        .card img {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+        .card h3 {
+            margin: 10px 0 5px 0;
+            color: #333;
+        }
+        .card p {
+            color: #666;
+            font-size: 14px;
+        }
+        #buttonDiv {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .fb-btn {
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .fb-btn:hover {
+            background-color: #166fe5;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Acceso de Usuarios</h2>
+    <p>Inicia sesión de forma segura con tu cuenta de Facebook</p>
+
+    <!-- Contenedor del botón de Facebook -->
+    <div id="buttonDiv">
+        <button class="fb-btn" onclick="loginWithFacebook()">Iniciar sesión con Facebook</button>
+    </div>
+
+    <!-- Tarjeta del DOM que se mostrará al autenticarse con éxito -->
+    <div id="userInfo" class="card">
+        <img id="userPic" src="" alt="Foto de perfil">
+        <h3 id="userName"></h3>
+        <p id="userEmail"></p>
+    </div>
+
+    <!-- SDK de Facebook -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/es_LA/sdk.js"></script>
+
+    <script>
+        // Inicializar el SDK de Facebook al cargar la página
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : '1005176571913298', // Reemplaza esto con tu ID de aplicación de Facebook Developers si es necesario probarlo en red
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v18.0'
+            });
+        };
+
+        // Función que se ejecuta al hacer clic en el botón de Facebook
+        function loginWithFacebook() {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    // Si el login es exitoso, consultamos los datos del usuario con la Graph API
+                    FB.api('/me', { fields: 'name,email,picture.width(150)' }, function(userData) {
+                        const nombre = userData.name;
+                        const correoFb = userData.email || "Correo no disponible";
+                        const fotoPerfil = userData.picture.data.url;
+
+                        // Pintamos los datos en la tarjeta del DOM
+                        document.getElementById('userName').textContent = nombre;
+                        document.getElementById('userEmail').textContent = correoFb;
+                        document.getElementById('userPic').src = fotoPerfil;
+
+                        // Ocultamos el botón y mostramos la tarjeta
+                        document.getElementById('buttonDiv').style.display = 'none';
+                        document.getElementById('userInfo').style.display = 'block';
+                    });
+                } else {
+                    alert('El usuario canceló la autorización o no inició sesión.');
+                }
+            }, { scope: 'public_profile,email' });
+        }
+    </script>
+
+</body>
+</html>
